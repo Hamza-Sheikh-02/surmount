@@ -34,6 +34,7 @@ export default function HeroSection() {
   const autoPlayTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isAutoPlayActiveRef = useRef(true);
   const currentIndexRef = useRef(0);
+  const isTimerRunningRef = useRef(false);
 
   // Update current index ref when current changes
   useEffect(() => {
@@ -98,46 +99,8 @@ export default function HeroSection() {
       circleTimelineRef.current.kill();
       circleTimelineRef.current = null;
     }
+    isTimerRunningRef.current = false;
   }, []);
-
-  const startCircleAnimation = useCallback(() => {
-    if (!circleRef.current || !isAutoPlayActiveRef.current) return;
-
-    const radius = 14;
-    const circumference = 2 * Math.PI * radius;
-
-    // Clear existing animation
-    if (circleTimelineRef.current) {
-      circleTimelineRef.current.kill();
-    }
-
-    // Reset circle
-    gsap.set(circleRef.current, {
-      strokeDasharray: circumference,
-      strokeDashoffset: circumference,
-    });
-
-    // Start new animation
-    circleTimelineRef.current = gsap.to(circleRef.current, {
-      strokeDashoffset: 0,
-      duration: DURATION / 1000,
-      ease: "none",
-      onComplete: () => {
-        if (isAutoPlayActiveRef.current && slides.length > 0) {
-          const nextIndex = (currentIndexRef.current + 1) % slides.length;
-          animateToSlide(nextIndex, "down");
-        }
-      },
-    });
-  }, [slides.length]);
-
-  const startAutoPlay = useCallback(() => {
-    if (!isAutoPlayActiveRef.current || !imagesLoaded || slides.length === 0)
-      return;
-
-    clearAllTimers();
-    startCircleAnimation();
-  }, [clearAllTimers, startCircleAnimation, imagesLoaded, slides.length]);
 
   const animateToSlide = useCallback(
     (newIndex: number, direction: "up" | "down" = "down") => {
@@ -149,6 +112,8 @@ export default function HeroSection() {
       ) {
         return;
       }
+
+      console.log(`Animating to slide ${newIndex} in direction ${direction}`);
 
       setIsAnimating(true);
       isAutoPlayActiveRef.current = false;
@@ -219,11 +184,15 @@ export default function HeroSection() {
           setCurrent(newIndex);
           setIsAnimating(false);
 
+          console.log(
+            `Animation complete, starting autoplay for slide ${newIndex}`
+          );
+
           // Restart autoplay after animation completes
           setTimeout(() => {
             isAutoPlayActiveRef.current = true;
             startAutoPlay();
-          }, 200);
+          }, 500);
         },
       });
 
@@ -270,8 +239,78 @@ export default function HeroSection() {
         "-=0.6"
       );
     },
-    [slides, clearAllTimers, startAutoPlay, imagesLoaded, isAnimating]
+    [slides, clearAllTimers, imagesLoaded, isAnimating]
   );
+
+  const startCircleAnimation = useCallback(() => {
+    if (
+      !circleRef.current ||
+      !isAutoPlayActiveRef.current ||
+      isTimerRunningRef.current
+    ) {
+      return;
+    }
+
+    console.log(
+      `Starting circle animation for slide ${currentIndexRef.current}`
+    );
+
+    const radius = 14;
+    const circumference = 2 * Math.PI * radius;
+
+    // Clear existing animation
+    if (circleTimelineRef.current) {
+      circleTimelineRef.current.kill();
+    }
+
+    // Reset circle
+    gsap.set(circleRef.current, {
+      strokeDasharray: circumference,
+      strokeDashoffset: circumference,
+    });
+
+    isTimerRunningRef.current = true;
+
+    // Start new animation
+    circleTimelineRef.current = gsap.to(circleRef.current, {
+      strokeDashoffset: 0,
+      duration: DURATION / 1000,
+      ease: "none",
+      onComplete: () => {
+        console.log(
+          `Circle animation complete for slide ${currentIndexRef.current}`
+        );
+        isTimerRunningRef.current = false;
+
+        if (isAutoPlayActiveRef.current && slides.length > 0 && !isAnimating) {
+          const nextIndex = (currentIndexRef.current + 1) % slides.length;
+          console.log(`Auto-advancing to slide ${nextIndex}`);
+          animateToSlide(nextIndex, "down");
+        }
+      },
+    });
+  }, [slides.length, animateToSlide, isAnimating]);
+
+  const startAutoPlay = useCallback(() => {
+    if (
+      !isAutoPlayActiveRef.current ||
+      !imagesLoaded ||
+      slides.length === 0 ||
+      isTimerRunningRef.current
+    ) {
+      return;
+    }
+
+    console.log(`Starting autoplay for slide ${currentIndexRef.current}`);
+    clearAllTimers();
+
+    // Small delay before starting circle animation
+    setTimeout(() => {
+      if (isAutoPlayActiveRef.current && !isTimerRunningRef.current) {
+        startCircleAnimation();
+      }
+    }, 100);
+  }, [clearAllTimers, startCircleAnimation, imagesLoaded, slides.length]);
 
   const changeSlide = useCallback(
     (newIndex: number, direction: "up" | "down" = "down") => {
@@ -288,6 +327,8 @@ export default function HeroSection() {
       !imagesLoaded
     )
       return;
+
+    console.log("Initializing slides");
 
     // Set initial background images
     if (slides[0]) {
@@ -306,6 +347,7 @@ export default function HeroSection() {
     // Initial entrance animation
     const tl = gsap.timeline({
       onComplete: () => {
+        console.log("Initial animation complete, starting autoplay");
         setTimeout(() => {
           isAutoPlayActiveRef.current = true;
           startAutoPlay();
@@ -331,12 +373,14 @@ export default function HeroSection() {
   }, [slides, imagesLoaded, startAutoPlay]);
 
   const handleUserInteraction = useCallback(() => {
+    console.log("User interaction detected, pausing autoplay");
     isAutoPlayActiveRef.current = false;
     clearAllTimers();
 
     // Resume autoplay after user interaction
     setTimeout(() => {
       if (!isAnimating) {
+        console.log("Resuming autoplay after user interaction");
         isAutoPlayActiveRef.current = true;
         startAutoPlay();
       }
