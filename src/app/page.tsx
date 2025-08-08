@@ -7,7 +7,7 @@ const Splash: React.FC = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       window.location.href = "/home";
-    }, 4000);
+    }, 2000);
     return () => clearTimeout(timer);
   }, []);
 

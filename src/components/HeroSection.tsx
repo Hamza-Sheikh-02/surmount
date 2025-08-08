@@ -20,6 +20,7 @@ export default function HeroSection() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [isFooterVisible, setIsFooterVisible] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const slide1Ref = useRef<HTMLDivElement>(null);
@@ -68,6 +69,41 @@ export default function HeroSection() {
               "/placeholder.svg?height=1080&width=1920&text=Timeless+Elegance",
             buttonText: "View Details",
           },
+          {
+            id: 4,
+            title: "Precision Engineering",
+            image:
+              "/placeholder.svg?height=1080&width=1920&text=Precision+Engineering",
+            buttonText: "Learn More",
+          },
+          {
+            id: 5,
+            title: "Heritage Collection",
+            image:
+              "/placeholder.svg?height=1080&width=1920&text=Heritage+Collection",
+            buttonText: "View Heritage",
+          },
+          {
+            id: 6,
+            title: "Modern Innovation",
+            image:
+              "/placeholder.svg?height=1080&width=1920&text=Modern+Innovation",
+            buttonText: "Discover Tech",
+          },
+          {
+            id: 7,
+            title: "Artisan Crafted",
+            image:
+              "/placeholder.svg?height=1080&width=1920&text=Artisan+Crafted",
+            buttonText: "Meet Artisans",
+          },
+          {
+            id: 8,
+            title: "Exclusive Limited",
+            image:
+              "/placeholder.svg?height=1080&width=1920&text=Exclusive+Limited",
+            buttonText: "Shop Now",
+          },
         ]);
       });
   }, []);
@@ -112,8 +148,6 @@ export default function HeroSection() {
       ) {
         return;
       }
-
-      console.log(`Animating to slide ${newIndex} in direction ${direction}`);
 
       setIsAnimating(true);
       isAutoPlayActiveRef.current = false;
@@ -184,15 +218,13 @@ export default function HeroSection() {
           setCurrent(newIndex);
           setIsAnimating(false);
 
-          console.log(
-            `Animation complete, starting autoplay for slide ${newIndex}`
-          );
-
-          // Restart autoplay after animation completes
-          setTimeout(() => {
-            isAutoPlayActiveRef.current = true;
-            startAutoPlay();
-          }, 500);
+          // Only restart autoplay if not on the last slide
+          if (newIndex < slides.length - 1) {
+            setTimeout(() => {
+              isAutoPlayActiveRef.current = true;
+              startAutoPlay();
+            }, 500);
+          }
         },
       });
 
@@ -251,9 +283,10 @@ export default function HeroSection() {
       return;
     }
 
-    console.log(
-      `Starting circle animation for slide ${currentIndexRef.current}`
-    );
+    // Don't start timer on last slide
+    if (currentIndexRef.current >= slides.length - 1) {
+      return;
+    }
 
     const radius = 14;
     const circumference = 2 * Math.PI * radius;
@@ -277,15 +310,14 @@ export default function HeroSection() {
       duration: DURATION / 1000,
       ease: "none",
       onComplete: () => {
-        console.log(
-          `Circle animation complete for slide ${currentIndexRef.current}`
-        );
         isTimerRunningRef.current = false;
 
         if (isAutoPlayActiveRef.current && slides.length > 0 && !isAnimating) {
           const nextIndex = (currentIndexRef.current + 1) % slides.length;
-          console.log(`Auto-advancing to slide ${nextIndex}`);
-          animateToSlide(nextIndex, "down");
+          // Only auto-advance if not on last slide
+          if (currentIndexRef.current < slides.length - 1) {
+            animateToSlide(nextIndex, "down");
+          }
         }
       },
     });
@@ -301,12 +333,20 @@ export default function HeroSection() {
       return;
     }
 
-    console.log(`Starting autoplay for slide ${currentIndexRef.current}`);
+    // Don't start autoplay on last slide
+    if (currentIndexRef.current >= slides.length - 1) {
+      return;
+    }
+
     clearAllTimers();
 
     // Small delay before starting circle animation
     setTimeout(() => {
-      if (isAutoPlayActiveRef.current && !isTimerRunningRef.current) {
+      if (
+        isAutoPlayActiveRef.current &&
+        !isTimerRunningRef.current &&
+        currentIndexRef.current < slides.length - 1
+      ) {
         startCircleAnimation();
       }
     }, 100);
@@ -328,8 +368,6 @@ export default function HeroSection() {
     )
       return;
 
-    console.log("Initializing slides");
-
     // Set initial background images
     if (slides[0]) {
       slide1Ref.current.style.backgroundImage = `url(${slides[0].image})`;
@@ -347,7 +385,6 @@ export default function HeroSection() {
     // Initial entrance animation
     const tl = gsap.timeline({
       onComplete: () => {
-        console.log("Initial animation complete, starting autoplay");
         setTimeout(() => {
           isAutoPlayActiveRef.current = true;
           startAutoPlay();
@@ -373,19 +410,17 @@ export default function HeroSection() {
   }, [slides, imagesLoaded, startAutoPlay]);
 
   const handleUserInteraction = useCallback(() => {
-    console.log("User interaction detected, pausing autoplay");
     isAutoPlayActiveRef.current = false;
     clearAllTimers();
 
-    // Resume autoplay after user interaction
+    // Resume autoplay after user interaction (only if not on last slide)
     setTimeout(() => {
-      if (!isAnimating) {
-        console.log("Resuming autoplay after user interaction");
+      if (!isAnimating && currentIndexRef.current < slides.length - 1) {
         isAutoPlayActiveRef.current = true;
         startAutoPlay();
       }
     }, 8000);
-  }, [isAnimating, clearAllTimers, startAutoPlay]);
+  }, [isAnimating, clearAllTimers, startAutoPlay, slides.length]);
 
   // Initialize slides
   useEffect(() => {
@@ -405,18 +440,19 @@ export default function HeroSection() {
     }
   }, [slides.length, imagesLoaded, isInitialized, initializeSlides]);
 
-  // Enhanced scroll handling with proper direction
+  // Enhanced scroll handling with footer reveal on last slide
   useEffect(() => {
     if (slides.length === 0 || !imagesLoaded) return;
 
     let accumulatedScroll = 0;
-    const scrollThreshold = 150;
+    const scrollThreshold = 80;
     let scrollTimeout: NodeJS.Timeout;
+    let isScrolling = false;
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
 
-      if (isAnimating) return;
+      if (isAnimating || isScrolling) return;
 
       // Clear previous timeout
       if (scrollTimeout) {
@@ -428,28 +464,49 @@ export default function HeroSection() {
       // Reset accumulated scroll after a delay
       scrollTimeout = setTimeout(() => {
         accumulatedScroll = 0;
-      }, 150);
+        isScrolling = false;
+      }, 100);
 
       const progress = Math.abs(accumulatedScroll) / scrollThreshold;
 
       if (progress >= 1) {
-        handleUserInteraction(); // Stop autoplay temporarily
+        isScrolling = true;
 
         if (e.deltaY > 0) {
-          // Scroll down - next slide (slide comes from bottom)
-          const nextIndex = (currentIndexRef.current + 1) % slides.length;
-          changeSlide(nextIndex, "down");
+          // Scroll down
+          if (currentIndexRef.current === slides.length - 1) {
+            // On last slide, show footer instead of cycling
+            if (!isFooterVisible) {
+              setIsFooterVisible(true);
+            }
+          } else {
+            // Normal slide transition
+            handleUserInteraction();
+            const nextIndex = currentIndexRef.current + 1;
+            changeSlide(nextIndex, "down");
+          }
         } else {
-          // Scroll up - previous slide (slide comes from top)
-          const prevIndex =
-            (currentIndexRef.current - 1 + slides.length) % slides.length;
-          changeSlide(prevIndex, "up");
+          // Scroll up
+          if (isFooterVisible) {
+            // Hide footer and stay on last slide (don't go to slide 1)
+            setIsFooterVisible(false);
+          } else if (currentIndexRef.current > 0) {
+            // Normal slide transition
+            handleUserInteraction();
+            const prevIndex = currentIndexRef.current - 1;
+            changeSlide(prevIndex, "up");
+          }
+          // If on slide 1 and scrolling up, do nothing (no cycling to last slide)
         }
         accumulatedScroll = 0;
+
+        // Reset scrolling flag after animation
+        setTimeout(() => {
+          isScrolling = false;
+        }, 1500);
       }
     };
 
-    // Add wheel event listener to the container
     const container = containerRef.current;
     if (container) {
       container.addEventListener("wheel", handleWheel, { passive: false });
@@ -467,9 +524,10 @@ export default function HeroSection() {
     changeSlide,
     imagesLoaded,
     handleUserInteraction,
+    isFooterVisible,
   ]);
 
-  // Touch/swipe support for mobile
+  // Touch/swipe support for mobile with footer reveal
   useEffect(() => {
     if (slides.length === 0 || !imagesLoaded) return;
 
@@ -491,17 +549,27 @@ export default function HeroSection() {
 
       // Minimum swipe distance and maximum time
       if (Math.abs(deltaY) > 50 && deltaTime < 500) {
-        handleUserInteraction();
-
         if (deltaY > 0) {
-          // Swipe up - next slide
-          const nextIndex = (currentIndexRef.current + 1) % slides.length;
-          changeSlide(nextIndex, "down");
+          // Swipe up - next slide or show footer
+          if (currentIndexRef.current === slides.length - 1) {
+            if (!isFooterVisible) {
+              setIsFooterVisible(true);
+            }
+          } else {
+            handleUserInteraction();
+            const nextIndex = currentIndexRef.current + 1;
+            changeSlide(nextIndex, "down");
+          }
         } else {
-          // Swipe down - previous slide
-          const prevIndex =
-            (currentIndexRef.current - 1 + slides.length) % slides.length;
-          changeSlide(prevIndex, "up");
+          // Swipe down - previous slide or hide footer
+          if (isFooterVisible) {
+            setIsFooterVisible(false);
+          } else if (currentIndexRef.current > 0) {
+            handleUserInteraction();
+            const prevIndex = currentIndexRef.current - 1;
+            changeSlide(prevIndex, "up");
+          }
+          // If on slide 1 and swiping down, do nothing
         }
       }
     };
@@ -524,7 +592,21 @@ export default function HeroSection() {
     changeSlide,
     imagesLoaded,
     handleUserInteraction,
+    isFooterVisible,
   ]);
+
+  // Hide scrollbars globally
+  useEffect(() => {
+    // Hide scrollbars on body and html
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      // Restore scrollbars on cleanup
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    };
+  }, []);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -557,6 +639,10 @@ export default function HeroSection() {
       <section
         ref={containerRef}
         className="relative w-full h-screen overflow-hidden"
+        style={{
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+        }}
       >
         <Navigation />
 
@@ -583,7 +669,7 @@ export default function HeroSection() {
             style={{ willChange: "transform, opacity" }}
           >
             {currentSlide.title}
-            <span className="absolute left-0 bottom-0 w-0 h-[1px] sm:h-[2px] bg-white transition-all duration-500 group-hover:w-full" />
+            <span className="absolute left-0 bottom-0 w-0 h-[1px] sm:h-[2px] bg-white transition-all duration-500 group-hover:w-full mt-2" />
           </h1>
         </div>
 
@@ -610,7 +696,7 @@ export default function HeroSection() {
             style={{ willChange: "transform, opacity" }}
           >
             {nextSlide.title}
-            <span className="absolute left-0 bottom-0 w-0 h-[1px] sm:h-[2px] bg-white transition-all duration-500 group-hover:w-full" />
+            <span className="absolute left-0 bottom-0 w-0 h-[1px] sm:h-[2px] bg-white transition-all duration-500 group-hover:w-full mt-2" />
           </h1>
         </div>
 
@@ -642,16 +728,19 @@ export default function HeroSection() {
                     strokeWidth="3"
                     fill="none"
                   />
-                  <circle
-                    ref={circleRef}
-                    cx="16"
-                    cy="16"
-                    r="14"
-                    stroke="white"
-                    strokeWidth="3"
-                    fill="none"
-                    strokeLinecap="round"
-                  />
+                  {/* Only show progress circle if not on last slide */}
+                  {current < slides.length - 1 && (
+                    <circle
+                      ref={circleRef}
+                      cx="16"
+                      cy="16"
+                      r="14"
+                      stroke="white"
+                      strokeWidth="3"
+                      fill="none"
+                      strokeLinecap="round"
+                    />
+                  )}
                 </svg>
               ) : (
                 <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-transparent border border-white rounded-full group-hover:bg-white transition-all duration-300" />
@@ -664,14 +753,22 @@ export default function HeroSection() {
         <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 md:bottom-8 md:right-8 lg:bottom-6 lg:right-6 z-40">
           <button
             onClick={handleUserInteraction}
-            className="body-font px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2 text-xs sm:text-sm rounded-full border-2 border-white text-white font-semibold uppercase tracking-wide hover:bg-white hover:text-black transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+            className="body-font mb-8 px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2 text-xs sm:text-sm rounded-full border-2 border-white text-white font-semibold uppercase tracking-wide hover:bg-white hover:text-black transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
           >
             <span className="hidden sm:inline">{currentSlide.buttonText}</span>
-            <span className="sm:hidden">Explore</span>
+            <span className="sm:hidden">{currentSlide.buttonText}</span>
           </button>
         </div>
       </section>
-      <Footer />
+
+      {/* Footer - Show on last slide when scrolled down */}
+      <div
+        className={`fixed bottom-0 left-0 right-0 z-50 transform transition-transform duration-700 ease-in-out ${
+          isFooterVisible ? "translate-y-0" : "translate-y-full"
+        }`}
+      >
+        <Footer onScrollBack={() => setIsFooterVisible(false)} />
+      </div>
     </>
   );
 }
