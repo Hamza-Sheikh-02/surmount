@@ -366,7 +366,7 @@ export default function HeroSection() {
   if (slides.length === 0 || !imagesLoaded) {
     return (
       <section className="relative w-full h-screen overflow-hidden bg-black flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
+        <div className="text-white text-lg sm:text-xl">Loading...</div>
       </section>
     );
   }
@@ -384,9 +384,10 @@ export default function HeroSection() {
       >
         <Navigation />
 
+        {/* Slide 1 */}
         <div
           ref={slide1Ref}
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat text-white flex flex-col justify-end p-10"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat text-white flex flex-col justify-end p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12"
           style={{
             willChange: "transform",
             backfaceVisibility: "hidden",
@@ -395,24 +396,25 @@ export default function HeroSection() {
         >
           <span
             ref={subtitle1Ref}
-            className="text-xs tracking-widest uppercase"
+            className="text-xs sm:text-sm tracking-widest uppercase mb-1 sm:mb-2"
             style={{ willChange: "transform, opacity" }}
           >
             Surmount Timepieces
           </span>
           <h1
             ref={title1Ref}
-            className="text-3xl md:text-5xl mt-2 relative group inline-block uppercase w-fit"
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl mt-1 sm:mt-2 relative group inline-block uppercase w-fit font-light leading-tight"
             style={{ willChange: "transform, opacity" }}
           >
             {currentSlide.title}
-            <span className="absolute left-0 bottom-0 w-0 h-[2px] bg-white transition-all duration-500 group-hover:w-full" />
+            <span className="absolute left-0 bottom-0 w-0 h-[1px] sm:h-[2px] bg-white transition-all duration-500 group-hover:w-full" />
           </h1>
         </div>
 
+        {/* Slide 2 */}
         <div
           ref={slide2Ref}
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat text-white flex flex-col justify-end p-10"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat text-white flex flex-col justify-end p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12"
           style={{
             willChange: "transform",
             backfaceVisibility: "hidden",
@@ -421,22 +423,23 @@ export default function HeroSection() {
         >
           <span
             ref={subtitle2Ref}
-            className="text-xs tracking-widest uppercase"
+            className="text-xs sm:text-sm tracking-widest uppercase mb-1 sm:mb-2"
             style={{ willChange: "transform, opacity" }}
           >
             Surmount Timepieces
           </span>
           <h1
             ref={title2Ref}
-            className="text-3xl md:text-5xl mt-2 relative group inline-block uppercase w-fit"
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl mt-1 sm:mt-2 relative group inline-block uppercase w-fit font-light leading-tight"
             style={{ willChange: "transform, opacity" }}
           >
             {nextSlide.title}
-            <span className="absolute left-0 bottom-0 w-0 h-[2px] bg-white transition-all duration-500 group-hover:w-full" />
+            <span className="absolute left-0 bottom-0 w-0 h-[1px] sm:h-[2px] bg-white transition-all duration-500 group-hover:w-full" />
           </h1>
         </div>
 
-        <div className="absolute top-1/2 right-6 transform -translate-y-1/2 flex flex-col gap-[2px] z-40">
+        {/* Navigation dots - Responsive positioning */}
+        <div className="absolute top-1/2 right-3 sm:right-4 md:right-6 lg:right-8 transform -translate-y-1/2 flex flex-col gap-[2px] z-40">
           {slides.map((_, index) => (
             <button
               key={index}
@@ -446,11 +449,14 @@ export default function HeroSection() {
                   changeSlide(index);
                 }
               }}
-              className="relative w-8 h-8 flex items-center justify-center"
+              className="relative w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 flex items-center justify-center"
               aria-label={`Go to slide ${index + 1}`}
             >
               {index === current ? (
-                <svg className="w-8 h-8 rotate-[-90deg]" viewBox="0 0 32 32">
+                <svg
+                  className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rotate-[-90deg]"
+                  viewBox="0 0 32 32"
+                >
                   <circle
                     cx="16"
                     cy="16"
@@ -472,18 +478,20 @@ export default function HeroSection() {
                   />
                 </svg>
               ) : (
-                <div className="w-2.5 h-2.5 bg-transparent border border-white rounded-full hover:bg-white transition-all duration-300" />
+                <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-transparent border border-white rounded-full hover:bg-white transition-all duration-300" />
               )}
             </button>
           ))}
         </div>
 
-        <div className="absolute bottom-6 right-6 z-40">
+        {/* CTA Button - Responsive positioning and sizing */}
+        <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 md:bottom-8 md:right-8 lg:bottom-6 lg:right-6 z-40">
           <button
             onClick={handleUserInteraction}
-            className="body-font mb-4 px-5 py-2 rounded-full border-2 border-white text-white font-semibold uppercase tracking-wide hover:bg-white hover:text-black transition-all duration-300 hover:-translate-y-1"
+            className="body-font px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2 text-xs sm:text-sm rounded-full border-2 border-white text-white font-semibold uppercase tracking-wide hover:bg-white hover:text-black transition-all duration-300 hover:-translate-y-1"
           >
-            {currentSlide.buttonText}
+            <span className="hidden sm:inline">{currentSlide.buttonText}</span>
+            <span className="sm:hidden">Explore</span>
           </button>
         </div>
       </section>
