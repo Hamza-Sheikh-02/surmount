@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "title": "Precision. Power. Prestige.",
+    "image": "/images/hero/hero-1.jpg",
+    "buttonText": "Explore the Collection"
+  },
+  {
+    "id": 2,
+    "title": "Crafted to Surpass",
+    "image": "/images/hero/hero-2.jpg",
+    "buttonText": "Discover More"
+  },
+  {
+    "id": 3,
+    "title": "Exclusivity in Every Detail",
+    "image": "/images/hero/hero-3.jpg",
+    "buttonText": "Explore the Collection"
+  },
+  {
+    "id": 4,
+    "title": "The Apex of Innovation",
+    "image": "/images/hero/hero-4.jpg",
+    "buttonText": "Discover More"
+  },
+  {
+    "id": 5,
+    "title": "Enduring Excellence",
+    "image": "/images/hero/hero-5.jpg",
+    "buttonText": "Explore the Collection"
+  },
+  {
+    "id": 6,
+    "title": "Where Art Meets Mechanics",
+    "image": "/images/hero/hero-6.jpg",
+    "buttonText": "Discover About The Brand"
+  },
+  {
+    "id": 7,
+    "title": "Care And Service",
+    "image": "/images/hero/hero-7.jpg",
+    "buttonText": "Discover About The Brand"
+  },
+  {
+    "id": 8,
+    "title": "Buying a Surmount",
+    "image": "/images/hero/hero-8.jpg",
+    "buttonText": "Discover More"
+  }
+]
