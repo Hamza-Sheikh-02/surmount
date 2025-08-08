@@ -12,7 +12,7 @@ interface HeroSlide {
   buttonText: string;
 }
 
-const DURATION = 5_000;
+const DURATION = 8_000;
 
 export default function HeroSection() {
   const [slides, setSlides] = useState<HeroSlide[]>([]);
@@ -33,6 +33,12 @@ export default function HeroSection() {
   const circleTimelineRef = useRef<gsap.core.Tween | null>(null);
   const autoPlayTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isAutoPlayActiveRef = useRef(true);
+  const currentIndexRef = useRef(0);
+
+  // Update current index ref when current changes
+  useEffect(() => {
+    currentIndexRef.current = current;
+  }, [current]);
 
   const fetchSlides = useCallback(() => {
     fetch("/data/hero.json")
@@ -95,45 +101,49 @@ export default function HeroSection() {
   }, []);
 
   const startCircleAnimation = useCallback(() => {
-    if (!circleRef.current) return;
+    if (!circleRef.current || !isAutoPlayActiveRef.current) return;
 
     const radius = 14;
     const circumference = 2 * Math.PI * radius;
 
+    // Clear existing animation
     if (circleTimelineRef.current) {
       circleTimelineRef.current.kill();
     }
 
+    // Reset circle
     gsap.set(circleRef.current, {
       strokeDasharray: circumference,
       strokeDashoffset: circumference,
     });
 
+    // Start new animation
     circleTimelineRef.current = gsap.to(circleRef.current, {
       strokeDashoffset: 0,
       duration: DURATION / 1000,
       ease: "none",
       onComplete: () => {
         if (isAutoPlayActiveRef.current && slides.length > 0) {
-          const nextIndex = (current + 1) % slides.length;
-          changeSlide(nextIndex);
+          const nextIndex = (currentIndexRef.current + 1) % slides.length;
+          animateToSlide(nextIndex, "down");
         }
       },
     });
-  }, [slides.length, current]);
+  }, [slides.length]);
 
   const startAutoPlay = useCallback(() => {
-    if (!isAutoPlayActiveRef.current || !imagesLoaded) return;
+    if (!isAutoPlayActiveRef.current || !imagesLoaded || slides.length === 0)
+      return;
 
     clearAllTimers();
     startCircleAnimation();
-  }, [clearAllTimers, startCircleAnimation, imagesLoaded]);
+  }, [clearAllTimers, startCircleAnimation, imagesLoaded, slides.length]);
 
   const animateToSlide = useCallback(
-    (newIndex: number) => {
+    (newIndex: number, direction: "up" | "down" = "down") => {
       if (
         isAnimating ||
-        newIndex === current ||
+        newIndex === currentIndexRef.current ||
         slides.length === 0 ||
         !imagesLoaded
       ) {
@@ -179,71 +189,93 @@ export default function HeroSection() {
         return;
       }
 
+      // Set animation direction based on scroll direction
+      const slideFromY = direction === "up" ? "-100%" : "100%";
+      const slideToY = direction === "up" ? "100%" : "-100%";
+      const textFromY = direction === "up" ? -50 : 50;
+
+      // Prepare inactive slide
       gsap.set(inactiveSlide, {
-        y: "0%",
+        y: slideFromY,
         zIndex: 5,
       });
 
       inactiveSlide.style.backgroundImage = `url(${newSlide.image})`;
-
-      gsap.set([inactiveTitle, inactiveSubtitle], { opacity: 0, y: 30 });
+      gsap.set([inactiveTitle, inactiveSubtitle], { opacity: 0, y: textFromY });
 
       if (inactiveTitle) {
         inactiveTitle.textContent = newSlide.title;
       }
 
+      // Create smooth animation timeline
       mainTimelineRef.current = gsap.timeline({
         onComplete: () => {
           if (activeSlide && inactiveSlide) {
             gsap.set(activeSlide, { zIndex: 5, y: "0%" });
-            gsap.set(inactiveSlide, { zIndex: 10 });
+            gsap.set(inactiveSlide, { zIndex: 10, y: "0%" });
             gsap.set([activeTitle, activeSubtitle], { opacity: 1, y: 0 });
           }
 
           setCurrent(newIndex);
           setIsAnimating(false);
 
+          // Restart autoplay after animation completes
           setTimeout(() => {
             isAutoPlayActiveRef.current = true;
             startAutoPlay();
-          }, 100);
+          }, 200);
         },
       });
 
-      mainTimelineRef.current
-        .to([activeTitle, activeSubtitle], {
-          opacity: 0,
-          y: -20,
-          duration: 0.3,
-          ease: "power2.in",
-        })
-        .to(
-          activeSlide,
-          {
-            y: "-100%",
-            duration: 0.8,
-            ease: "power3.inOut",
-          },
-          "-=0.1"
-        )
-        .to(
-          [inactiveSubtitle, inactiveTitle],
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.6,
-            stagger: 0.1,
-            ease: "power2.out",
-          },
-          "-=0.5"
-        );
+      // Animate text out
+      mainTimelineRef.current.to([activeTitle, activeSubtitle], {
+        opacity: 0,
+        y: direction === "up" ? 30 : -30,
+        duration: 0.4,
+        ease: "power2.inOut",
+        stagger: 0.05,
+      });
+
+      // Animate slides
+      mainTimelineRef.current.to(
+        inactiveSlide,
+        {
+          y: "0%",
+          duration: 1.2,
+          ease: "power3.inOut",
+        },
+        "-=0.2"
+      );
+
+      mainTimelineRef.current.to(
+        activeSlide,
+        {
+          y: slideToY,
+          duration: 1.2,
+          ease: "power3.inOut",
+        },
+        "-=1.2"
+      );
+
+      // Animate text in
+      mainTimelineRef.current.to(
+        [inactiveSubtitle, inactiveTitle],
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          stagger: 0.1,
+          ease: "power3.out",
+        },
+        "-=0.6"
+      );
     },
-    [current, isAnimating, slides, clearAllTimers, startAutoPlay, imagesLoaded]
+    [slides, clearAllTimers, startAutoPlay, imagesLoaded, isAnimating]
   );
 
   const changeSlide = useCallback(
-    (newIndex: number) => {
-      animateToSlide(newIndex);
+    (newIndex: number, direction: "up" | "down" = "down") => {
+      animateToSlide(newIndex, direction);
     },
     [animateToSlide]
   );
@@ -257,6 +289,7 @@ export default function HeroSection() {
     )
       return;
 
+    // Set initial background images
     if (slides[0]) {
       slide1Ref.current.style.backgroundImage = `url(${slides[0].image})`;
     }
@@ -264,34 +297,36 @@ export default function HeroSection() {
       slide2Ref.current.style.backgroundImage = `url(${slides[1].image})`;
     }
 
+    // Initial positioning
     gsap.set(slide1Ref.current, { y: "100%", zIndex: 10 });
     gsap.set(slide2Ref.current, { y: "0%", zIndex: 5 });
-    gsap.set([title1Ref.current, subtitle1Ref.current], { opacity: 0, y: 30 });
+    gsap.set([title1Ref.current, subtitle1Ref.current], { opacity: 0, y: 50 });
     gsap.set([title2Ref.current, subtitle2Ref.current], { opacity: 1, y: 0 });
 
+    // Initial entrance animation
     const tl = gsap.timeline({
       onComplete: () => {
         setTimeout(() => {
           isAutoPlayActiveRef.current = true;
           startAutoPlay();
-        }, 500);
+        }, 1000);
       },
     });
 
     tl.to(slide1Ref.current, {
       y: "0%",
-      duration: 1,
+      duration: 1.5,
       ease: "power3.out",
     }).to(
       [subtitle1Ref.current, title1Ref.current],
       {
         opacity: 1,
         y: 0,
-        duration: 0.6,
-        stagger: 0.1,
-        ease: "power2.out",
+        duration: 0.8,
+        stagger: 0.15,
+        ease: "power3.out",
       },
-      "-=0.5"
+      "-=0.8"
     );
   }, [slides, imagesLoaded, startAutoPlay]);
 
@@ -299,14 +334,16 @@ export default function HeroSection() {
     isAutoPlayActiveRef.current = false;
     clearAllTimers();
 
+    // Resume autoplay after user interaction
     setTimeout(() => {
       if (!isAnimating) {
         isAutoPlayActiveRef.current = true;
         startAutoPlay();
       }
-    }, 5000);
+    }, 8000);
   }, [isAnimating, clearAllTimers, startAutoPlay]);
 
+  // Initialize slides
   useEffect(() => {
     fetchSlides();
   }, [fetchSlides]);
@@ -324,35 +361,128 @@ export default function HeroSection() {
     }
   }, [slides.length, imagesLoaded, isInitialized, initializeSlides]);
 
+  // Enhanced scroll handling with proper direction
   useEffect(() => {
     if (slides.length === 0 || !imagesLoaded) return;
 
     let accumulatedScroll = 0;
-    const scrollThreshold = 100;
+    const scrollThreshold = 150;
+    let scrollTimeout: NodeJS.Timeout;
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
+
       if (isAnimating) return;
 
+      // Clear previous timeout
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+      }
+
       accumulatedScroll += e.deltaY;
+
+      // Reset accumulated scroll after a delay
+      scrollTimeout = setTimeout(() => {
+        accumulatedScroll = 0;
+      }, 150);
+
       const progress = Math.abs(accumulatedScroll) / scrollThreshold;
 
       if (progress >= 1) {
+        handleUserInteraction(); // Stop autoplay temporarily
+
         if (e.deltaY > 0) {
-          const nextIndex = (current + 1) % slides.length;
-          changeSlide(nextIndex);
+          // Scroll down - next slide (slide comes from bottom)
+          const nextIndex = (currentIndexRef.current + 1) % slides.length;
+          changeSlide(nextIndex, "down");
         } else {
-          const prevIndex = (current - 1 + slides.length) % slides.length;
-          changeSlide(prevIndex);
+          // Scroll up - previous slide (slide comes from top)
+          const prevIndex =
+            (currentIndexRef.current - 1 + slides.length) % slides.length;
+          changeSlide(prevIndex, "up");
         }
         accumulatedScroll = 0;
       }
     };
 
-    window.addEventListener("wheel", handleWheel, { passive: false });
-    return () => window.removeEventListener("wheel", handleWheel);
-  }, [slides.length, current, isAnimating, changeSlide, imagesLoaded]);
+    // Add wheel event listener to the container
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener("wheel", handleWheel, { passive: false });
 
+      return () => {
+        container.removeEventListener("wheel", handleWheel);
+        if (scrollTimeout) {
+          clearTimeout(scrollTimeout);
+        }
+      };
+    }
+  }, [
+    slides.length,
+    isAnimating,
+    changeSlide,
+    imagesLoaded,
+    handleUserInteraction,
+  ]);
+
+  // Touch/swipe support for mobile
+  useEffect(() => {
+    if (slides.length === 0 || !imagesLoaded) return;
+
+    let startY = 0;
+    let startTime = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      startY = e.touches[0].clientY;
+      startTime = Date.now();
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (isAnimating) return;
+
+      const endY = e.changedTouches[0].clientY;
+      const endTime = Date.now();
+      const deltaY = startY - endY;
+      const deltaTime = endTime - startTime;
+
+      // Minimum swipe distance and maximum time
+      if (Math.abs(deltaY) > 50 && deltaTime < 500) {
+        handleUserInteraction();
+
+        if (deltaY > 0) {
+          // Swipe up - next slide
+          const nextIndex = (currentIndexRef.current + 1) % slides.length;
+          changeSlide(nextIndex, "down");
+        } else {
+          // Swipe down - previous slide
+          const prevIndex =
+            (currentIndexRef.current - 1 + slides.length) % slides.length;
+          changeSlide(prevIndex, "up");
+        }
+      }
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener("touchstart", handleTouchStart, {
+        passive: true,
+      });
+      container.addEventListener("touchend", handleTouchEnd, { passive: true });
+
+      return () => {
+        container.removeEventListener("touchstart", handleTouchStart);
+        container.removeEventListener("touchend", handleTouchEnd);
+      };
+    }
+  }, [
+    slides.length,
+    isAnimating,
+    changeSlide,
+    imagesLoaded,
+    handleUserInteraction,
+  ]);
+
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       isAutoPlayActiveRef.current = false;
@@ -366,7 +496,9 @@ export default function HeroSection() {
   if (slides.length === 0 || !imagesLoaded) {
     return (
       <section className="relative w-full h-screen overflow-hidden bg-black flex items-center justify-center">
-        <div className="text-white text-lg sm:text-xl">Loading...</div>
+        <div className="text-white text-lg sm:text-xl animate-pulse">
+          Loading...
+        </div>
       </section>
     );
   }
@@ -438,7 +570,7 @@ export default function HeroSection() {
           </h1>
         </div>
 
-        {/* Navigation dots - Responsive positioning */}
+        {/* Navigation dots */}
         <div className="absolute top-1/2 right-3 sm:right-4 md:right-6 lg:right-8 transform -translate-y-1/2 flex flex-col gap-[2px] z-40">
           {slides.map((_, index) => (
             <button
@@ -446,10 +578,10 @@ export default function HeroSection() {
               onClick={() => {
                 handleUserInteraction();
                 if (!isAnimating && index !== current) {
-                  changeSlide(index);
+                  changeSlide(index, "down");
                 }
               }}
-              className="relative w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 flex items-center justify-center"
+              className="relative w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 flex items-center justify-center group"
               aria-label={`Go to slide ${index + 1}`}
             >
               {index === current ? (
@@ -478,17 +610,17 @@ export default function HeroSection() {
                   />
                 </svg>
               ) : (
-                <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-transparent border border-white rounded-full hover:bg-white transition-all duration-300" />
+                <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-transparent border border-white rounded-full group-hover:bg-white transition-all duration-300" />
               )}
             </button>
           ))}
         </div>
 
-        {/* CTA Button - Responsive positioning and sizing */}
+        {/* CTA Button */}
         <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 md:bottom-8 md:right-8 lg:bottom-6 lg:right-6 z-40">
           <button
             onClick={handleUserInteraction}
-            className="body-font px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2 text-xs sm:text-sm rounded-full border-2 border-white text-white font-semibold uppercase tracking-wide hover:bg-white hover:text-black transition-all duration-300 hover:-translate-y-1"
+            className="body-font px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2 text-xs sm:text-sm rounded-full border-2 border-white text-white font-semibold uppercase tracking-wide hover:bg-white hover:text-black transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
           >
             <span className="hidden sm:inline">{currentSlide.buttonText}</span>
             <span className="sm:hidden">Explore</span>
