@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MenuIcon, ChevronDown, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
 const underlineVariants = {
   initial: { width: 0 },
@@ -62,17 +63,19 @@ function Navbar({ className }: { className?: string }) {
         </motion.div>
 
         {/* Center Logo */}
-        <div className="absolute left-1/2 transform -translate-x-1/2 text-center select-none">
-          <motion.h1
-            className="text-sm sm:text-base md:text-lg lg:text-xl tracking-[0.15em] sm:tracking-[0.25em] uppercase font-light"
-            whileHover={{ scale: 1.05 }}
-          >
-            SURMOUNT
-          </motion.h1>
-          <p className="body-font text-[8px] sm:text-[10px] tracking-widest text-gray-300 uppercase mt-0.5">
-            WATCH COMPANY
-          </p>
-        </div>
+        <Link href="/">
+          <div className="absolute left-1/2 transform -translate-x-1/2 text-center select-none">
+            <motion.h1
+              className="text-sm sm:text-base md:text-lg lg:text-xl tracking-[0.15em] sm:tracking-[0.25em] uppercase font-light"
+              whileHover={{ scale: 1.05 }}
+            >
+              SURMOUNT
+            </motion.h1>
+            <p className="body-font text-[8px] sm:text-[10px] tracking-widest text-gray-300 uppercase mt-0.5">
+              WATCH COMPANY
+            </p>
+          </div>
+        </Link>
 
         {/* Right Desktop Menu */}
         <div className="hidden lg:flex items-center space-x-4 xl:space-x-6">
