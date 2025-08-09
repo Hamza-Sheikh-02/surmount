@@ -1,21 +1,12 @@
-"use client";
+import React from "react";
+import HeroSection from "@/components/HeroSection";
 
-import React, { useEffect } from "react";
-import { Loader } from "@/components/ui/loader";
-
-const Splash: React.FC = () => {
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      window.location.href = "/home";
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, []);
-
+const Home: React.FC = () => {
   return (
-    <div className="flex items-center justify-center h-screen w-screen bg-black text-white">
-      <Loader text="Surmount" />
+    <div>
+      <HeroSection />
     </div>
   );
 };
 
-export default Splash;
+export default Home;

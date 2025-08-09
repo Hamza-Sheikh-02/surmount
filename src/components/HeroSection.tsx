@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { Navigation } from "./Navigation";
 import { gsap } from "gsap";
 import Footer from "./Footer";
+import { Loader } from "./ui/loader";
 
 interface HeroSlide {
   id: number;
@@ -623,7 +624,7 @@ export default function HeroSection() {
     return (
       <section className="relative w-full h-screen overflow-hidden bg-black flex items-center justify-center">
         <div className="text-white text-lg sm:text-xl animate-pulse">
-          Loading...
+          <Loader text="SURMOUNT"/>
         </div>
       </section>
     );
