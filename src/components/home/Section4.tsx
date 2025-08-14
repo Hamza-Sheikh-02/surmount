@@ -8,9 +8,9 @@ export default function Section4() {
       className="relative h-screen w-full flex items-center overflow-hidden"
       style={{
         backgroundImage: "url('/images/hero/img-4.jpg')",
-        backgroundSize: "contain",
+        backgroundSize: "cover",
         backgroundRepeat: "no-repeat",
-        backgroundPosition: "right center",
+        backgroundPosition: "center center",
       }}
     >
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
@@ -22,7 +22,7 @@ export default function Section4() {
             transition={{ duration: 1 }}
           >
             <motion.p
-              className="uppercase tracking-[0.2em] sm:tracking-[0.3em] text-xs sm:text-sm text-emerald-400 font-medium"
+              className="uppercase tracking-[0.2em] sm:tracking-[0.3em] text-xs sm:text-sm font-medium"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
