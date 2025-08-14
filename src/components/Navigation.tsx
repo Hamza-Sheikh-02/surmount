@@ -116,23 +116,25 @@ function Navbar({ className }: { className?: string }) {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex items-center cursor-pointer group relative"
-          >
-            <span className="body-font text-xs tracking-widest uppercase">
-              COLLECTIONS
-            </span>
-            <span className="body-font absolute left-0 bottom-0 mt-2 w-0 h-[2px] bg-white transition-all duration-500 group-hover:w-full" />
+          <Link href="/collections">
             <motion.div
-              className="absolute bottom-0 left-0 h-[1px] bg-white"
-              variants={underlineVariants}
-              initial="initial"
-              whileHover="hover"
-              transition={{ duration: 0.3 }}
-            />
-          </motion.div>
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center cursor-pointer group relative"
+            >
+              <span className="body-font text-xs tracking-widest uppercase">
+                COLLECTIONS
+              </span>
+              <span className="body-font absolute left-0 bottom-0 mt-2 w-0 h-[2px] bg-white transition-all duration-500 group-hover:w-full" />
+              <motion.div
+                className="absolute bottom-0 left-0 h-[1px] bg-white"
+                variants={underlineVariants}
+                initial="initial"
+                whileHover="hover"
+                transition={{ duration: 0.3 }}
+              />
+            </motion.div>
+          </Link>
         </div>
 
         {/* Mobile Menu Toggle (visible on medium screens and below) */}

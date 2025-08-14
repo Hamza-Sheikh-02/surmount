@@ -1,5 +1,7 @@
 "use client";
 
+import type React from "react";
+
 import { useState, useEffect, useRef } from "react";
 import { Facebook, Instagram, ArrowRight, ChevronUp } from "lucide-react";
 
