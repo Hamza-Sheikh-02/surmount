@@ -104,8 +104,20 @@ export default function HeroSection() {
 
       const tl = gsap.timeline({
         onComplete: () => {
-          gsap.set(currentSection, { zIndex: 5, y: "0%" });
-          gsap.set(nextSection, { zIndex: 15, y: "0%" });
+          sectionsRef.current.forEach((section, index) => {
+            if (section) {
+              if (index === newIndex) {
+                // Current active section - visible and on top
+                gsap.set(section, { zIndex: 15, y: "0%" });
+              } else if (index < newIndex) {
+                // Previous sections - move above viewport
+                gsap.set(section, { zIndex: 5, y: "-100%" });
+              } else {
+                // Future sections - move below viewport
+                gsap.set(section, { zIndex: 5, y: "100%" });
+              }
+            }
+          });
           setCurrent(newIndex);
           setIsAnimating(false);
         },
@@ -291,7 +303,9 @@ export default function HeroSection() {
           return (
             <div
               key={section.id}
-              ref={(el) => (sectionsRef.current[index] = el)}
+              ref={(el) => {
+                sectionsRef.current[index] = el;
+              }}
               className="absolute inset-0"
               style={{
                 willChange: "transform",
@@ -312,6 +326,32 @@ export default function HeroSection() {
         })}
 
         <div className="absolute top-1/2 right-2 sm:right-3 md:right-4 lg:right-6 xl:right-8 transform -translate-y-1/2 flex flex-col gap-1 sm:gap-[2px] z-40">
+          {current > 0 && (
+            <button
+              onClick={() => {
+                if (!isAnimating && current > 0) {
+                  changeSection(current - 1, "up");
+                }
+              }}
+              className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 flex items-center justify-center group mb-2"
+              aria-label="Scroll up"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="group-hover:scale-110 transition-transform duration-300"
+              >
+                <polyline points="18,15 12,9 6,15"></polyline>
+              </svg>
+            </button>
+          )}
+
           {sections.map((_, index) => (
             <button
               key={index}
@@ -330,6 +370,32 @@ export default function HeroSection() {
               )}
             </button>
           ))}
+
+          {current < sections.length - 1 && (
+            <button
+              onClick={() => {
+                if (!isAnimating && current < sections.length - 1) {
+                  changeSection(current + 1, "down");
+                }
+              }}
+              className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 flex items-center justify-center group mt-2"
+              aria-label="Scroll down"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="group-hover:scale-110 transition-transform duration-300"
+              >
+                <polyline points="6,9 12,15 18,9"></polyline>
+              </svg>
+            </button>
+          )}
         </div>
       </section>
 

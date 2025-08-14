@@ -1,20 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
+import CircularScrollButton from "@/components/ScrollButton";
 
 interface Section1Props {
-  startAutoScroll?: () => void;
-  stopAutoScroll?: () => void;
-  isAutoScrollActive?: boolean;
-  timeLeft?: number;
+  onScrollNext?: () => void;
 }
 
-export default function Section1({
-  startAutoScroll,
-  stopAutoScroll,
-  isAutoScrollActive,
-  timeLeft,
-}: Section1Props) {
+export default function Section1({ onScrollNext }: Section1Props) {
   return (
     <section
       className="relative h-screen w-full flex items-center overflow-hidden"
@@ -27,10 +20,8 @@ export default function Section1({
     >
       <div className="relative z-10 w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 xl:gap-12 items-center min-h-screen py-20 sm:py-16 lg:py-0">
-          {/* Left side - Empty space for background image */}
           <div className="relative order-2 lg:order-1 hidden lg:block"></div>
 
-          {/* Right side - Content */}
           <motion.div
             className="text-white space-y-3 sm:space-y-4 md:space-y-6 order-1 lg:order-2 text-center lg:text-left"
             initial={{ opacity: 0, x: 50 }}
@@ -61,11 +52,11 @@ export default function Section1({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 1.1 }}
             >
-              Lorem Ipsum Dolor Sit Elit Consectetur Efitua
+              Lorem ipsum dolor sit amet consectetur adipisicing.
             </motion.p>
 
             <motion.div
-              className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-2 sm:pt-4 md:pt-6"
+              className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-1 sm:pt-2"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 1.3 }}
@@ -77,40 +68,7 @@ export default function Section1({
                 <div className="absolute inset-0 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
               </button>
 
-              {isAutoScrollActive && (
-                <div className="relative w-9 sm:w-10 md:w-12 h-9 sm:h-10 md:h-12 border border-white/30 rounded-full text-white flex items-center justify-center">
-                  <svg
-                    className="absolute inset-0 w-full h-full -rotate-90"
-                    viewBox="0 0 48 48"
-                  >
-                    <circle
-                      cx="24"
-                      cy="24"
-                      r="20"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeOpacity="0.3"
-                    />
-                    <circle
-                      cx="24"
-                      cy="24"
-                      r="20"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeDasharray={`${2 * Math.PI * 20}`}
-                      strokeDashoffset={`${
-                        2 * Math.PI * 20 * (1 - (8 - (timeLeft || 0)) / 8)
-                      }`}
-                      className="transition-all duration-1000 ease-linear"
-                    />
-                  </svg>
-                  <div className="relative z-10 text-xs font-medium">
-                    {Math.ceil(timeLeft || 0)}
-                  </div>
-                </div>
-              )}
+              <CircularScrollButton onClick={onScrollNext || (() => {})} />
             </motion.div>
           </motion.div>
         </div>

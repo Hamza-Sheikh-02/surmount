@@ -1,14 +1,8 @@
+import type React from "react";
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import font from "next/font/local";
-import { ViewTransitions } from 'next-view-transitions';
-
-const candelaDark = font({
-  src: "../fonts/CanelaDeck-Regular.otf",
-  display: "swap",
-  variable: "--font-canela",
-});
+import { ViewTransitions } from "next-view-transitions";
 
 export const metadata: Metadata = {
   title: "Surmount",
@@ -24,7 +18,7 @@ export default function RootLayout({
     <ViewTransitions>
       <html lang="en" suppressHydrationWarning>
         <head />
-        <body className={candelaDark.className}>
+        <body className="font-helvetica">
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"

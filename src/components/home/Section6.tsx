@@ -40,8 +40,36 @@ export default function Section6() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.6 }}
             >
-              Buying a Surmount
+              Buying a
+              <br />
+              Surmount
             </motion.h2>
+          </motion.div>
+
+          <motion.div
+            className="w-12 h-12 border border-white/30 rounded-full flex items-center justify-center cursor-pointer hover:border-white/60 transition-colors duration-300"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.7 }}
+          >
+            <motion.svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              animate={{ y: [0, 4, 0] }}
+              transition={{
+                duration: 2,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "easeInOut",
+              }}
+            >
+              <polyline points="6,9 12,15 18,9"></polyline>
+            </motion.svg>
           </motion.div>
 
           <motion.button
