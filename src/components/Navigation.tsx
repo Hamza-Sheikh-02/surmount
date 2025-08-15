@@ -66,7 +66,7 @@ function Navbar({ className }: { className?: string }) {
         <Link href="/">
           <div className="absolute left-1/2 transform -translate-x-1/2 text-center select-none">
             <motion.h1
-              className="text-sm sm:text-base md:text-lg lg:text-xl tracking-[0.15em] sm:tracking-[0.25em] uppercase font-light"
+              className="text-sm sm:text-base md:text-lg lg:text-xl tracking-[0.15em] sm:tracking-[0.25em] uppercase font-light font-canela-deck"
               whileHover={{ scale: 1.05 }}
             >
               SURMOUNT
