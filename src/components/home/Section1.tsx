@@ -2,7 +2,21 @@
 
 import { motion } from "framer-motion";
 
-export default function Section1() {
+interface Section1Props {
+  onScrollNext?: () => void;
+  startAutoScroll?: () => void;
+  stopAutoScroll?: () => void;
+  isAutoScrollActive?: boolean;
+  timeLeft?: number;
+}
+
+export default function Section1({
+  onScrollNext,
+  startAutoScroll,
+  stopAutoScroll,
+  isAutoScrollActive,
+  timeLeft,
+}: Section1Props) {
   return (
     <section
       className="relative h-screen w-full flex items-center overflow-hidden"
@@ -33,7 +47,7 @@ export default function Section1() {
             </motion.p>
 
             <motion.h1
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-light text-white leading-[0.9] tracking-tight"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-light text-white leading-[0.9] tracking-tight font-canela-deck"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.9 }}

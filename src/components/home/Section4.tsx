@@ -31,7 +31,7 @@ export default function Section4() {
             </motion.p>
 
             <motion.h2
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-light leading-none tracking-tight"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-light leading-none tracking-tight font-canela-deck"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.2 }}
@@ -65,7 +65,7 @@ export default function Section4() {
 
           <div className="relative order-2 lg:order-2 hidden lg:block"></div>
         </div>
-      </div>  
+      </div>
     </section>
   );
 }

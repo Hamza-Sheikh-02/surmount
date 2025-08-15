@@ -135,9 +135,13 @@
 
 @font-face {
   font-family: "Canela Deck";
-  src: url("/fonts/CanelaDeck-Regular.otf") format("opentype");
+  src: url("/fonts/CanelaDeck-Medium.otf") format("opentype");
   font-weight: normal;
   font-style: normal;
+}
+
+.font-canela-deck {
+  font-family: "Canela Deck", serif;
 }
 
 .font-helvetica {
