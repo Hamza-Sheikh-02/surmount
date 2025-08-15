@@ -135,6 +135,26 @@ function Navbar({ className }: { className?: string }) {
               />
             </motion.div>
           </Link>
+
+          <Link href="/care-and-servicing">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center cursor-pointer group relative"
+            >
+              <span className="body-font text-xs tracking-widest uppercase">
+                Care & Service
+              </span>
+              <span className="body-font absolute left-0 bottom-0 mt-2 w-0 h-[2px] bg-white transition-all duration-500 group-hover:w-full" />
+              <motion.div
+                className="absolute bottom-0 left-0 h-[1px] bg-white"
+                variants={underlineVariants}
+                initial="initial"
+                whileHover="hover"
+                transition={{ duration: 0.3 }}
+              />
+            </motion.div>
+          </Link>
         </div>
 
         {/* Mobile Menu Toggle (visible on medium screens and below) */}
@@ -173,14 +193,27 @@ function Navbar({ className }: { className?: string }) {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="text-center space-y-6">
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  className="cursor-pointer"
-                >
-                  <span className="text-lg tracking-widest uppercase">
-                    COLLECTIONS
-                  </span>
-                </motion.div>
+                <Link href={"/collections"}>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    className="cursor-pointer"
+                  >
+                    <span className="text-lg tracking-widest uppercase">
+                      COLLECTIONS
+                    </span>
+                  </motion.div>
+                </Link>
+
+                <Link href={"/care-and-servicing"}>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    className="cursor-pointer"
+                  >
+                    <span className="text-lg tracking-widest uppercase">
+                      CARE & SERVICE
+                    </span>
+                  </motion.div>
+                </Link>
 
                 <div className="pt-4 border-t border-gray-700">
                   <DropdownMenu>
