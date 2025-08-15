@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -36,7 +36,7 @@ function Navbar({ className }: { className?: string }) {
     <>
       <header
         className={cn(
-          "fixed top-0 left-0 mt-4 right-0 z-50 w-full px-4 sm:px-6 md:px-8 lg:px-12 py-3 sm:py-4 flex justify-between items-center text-white text-sm transition-all duration-300",
+          "fixed top-0 left-0 mt-2 right-0 z-50 w-full px-4 sm:px-6 md:px-8 lg:px-12 py-2 sm:py-3 flex justify-between items-center text-white text-sm transition-all duration-300",
           "bg-transparent",
           className
         )}
@@ -71,7 +71,7 @@ function Navbar({ className }: { className?: string }) {
             >
               SURMOUNT
             </motion.h1>
-            <p className="body-font text-[8px] sm:text-[10px] tracking-widest text-gray-300 uppercase mt-0.5">
+            <p className="body-font text-[8px] sm:text-[10px] tracking-widest text-gray-300 uppercase mt-0">
               WATCH COMPANY
             </p>
           </div>
@@ -90,7 +90,7 @@ function Navbar({ className }: { className?: string }) {
                   ENGLISH
                 </span>
                 <ChevronDown className="w-3 h-3 ml-1" />
-                <span className="body-font mt-2 absolute left-0 bottom-0 w-0 h-[2px] bg-white transition-all duration-500 group-hover:w-full" />
+                <span className="body-font absolute left-0 bottom-0 mt-2 w-0 h-[2px] bg-white transition-all duration-500 group-hover:w-full" />
                 <motion.div
                   className="absolute bottom-0 left-0 h-[1px] bg-white"
                   variants={underlineVariants}

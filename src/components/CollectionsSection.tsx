@@ -450,6 +450,9 @@ export default function CollectionsSection() {
               stopAutoScroll();
               scrollToNextSection();
             }}
+            isAutoScrollActive={isAutoScrollActive}
+            timeLeft={timeLeft}
+            totalTime={8}
           />
         </div>
       </section>

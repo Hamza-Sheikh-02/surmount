@@ -12,7 +12,7 @@ import CircularScrollButton from "./ScrollButton";
 const sections = [
   { id: 1, component: Section1 },
   { id: 2, component: Section2 },
-  { id: 3, component: Section3 }
+  { id: 3, component: Section3 },
 ];
 
 export default function CarenServiceSection() {
@@ -442,6 +442,9 @@ export default function CarenServiceSection() {
               stopAutoScroll();
               scrollToNextSection();
             }}
+            isAutoScrollActive={isAutoScrollActive}
+            timeLeft={timeLeft}
+            totalTime={8}
           />
         </div>
       </section>

@@ -2,6 +2,7 @@ import type React from "react";
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { LoadingProvider } from "@/components/LoadingProvider";
 import { ViewTransitions } from "next-view-transitions";
 
 export const metadata: Metadata = {
@@ -25,7 +26,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <LoadingProvider>{children}</LoadingProvider>
           </ThemeProvider>
         </body>
       </html>

@@ -340,6 +340,14 @@ export default function HeroSection() {
     [isAnimating, current, stopAutoScroll, changeSection]
   );
 
+  const handleScrollClick = useCallback(() => {
+    if (isAutoScrollActive) {
+      stopAutoScroll();
+    } else {
+      startAutoScroll();
+    }
+  }, [isAutoScrollActive, startAutoScroll, stopAutoScroll]);
+
   return (
     <>
       <section
@@ -444,10 +452,10 @@ export default function HeroSection() {
 
         <div className="fixed bottom-8 right-8 z-50">
           <CircularScrollButton
-            onClick={() => {
-              stopAutoScroll();
-              scrollToNextSection();
-            }}
+            onClick={scrollToNextSection}
+            isAutoScrollActive={isAutoScrollActive}
+            timeLeft={timeLeft}
+            totalTime={8}
           />
         </div>
       </section>
