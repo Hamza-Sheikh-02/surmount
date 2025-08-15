@@ -10,6 +10,7 @@ import Section3 from "./home/Section3";
 import Section4 from "./home/Section4";
 import Section5 from "./home/Section5";
 import Section6 from "./home/Section6";
+import CircularScrollButton from "./ScrollButton";
 
 const sections = [
   { id: 1, component: Section1 },
@@ -24,7 +25,7 @@ export default function HeroSection() {
   const [current, setCurrent] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isFooterVisible, setIsFooterVisible] = useState(false);
-  const [isAutoScrollActive, setIsAutoScrollActive] = useState(false);
+  const [isAutoScrollActive, setIsAutoScrollActive] = useState(true);
   const [timeLeft, setTimeLeft] = useState(8);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -32,6 +33,8 @@ export default function HeroSection() {
   const currentIndexRef = useRef(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isScrollingRef = useRef(false);
 
   useEffect(() => {
     currentIndexRef.current = current;
@@ -41,9 +44,17 @@ export default function HeroSection() {
     setIsAutoScrollActive(true);
     setTimeLeft(8);
 
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (countdownRef.current) clearInterval(countdownRef.current);
+    // Clear any existing timers first
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    if (countdownRef.current) {
+      clearInterval(countdownRef.current);
+      countdownRef.current = null;
+    }
 
+    // Start countdown timer
     countdownRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -53,6 +64,7 @@ export default function HeroSection() {
       });
     }, 1000);
 
+    // Start auto-scroll timer
     timerRef.current = setInterval(() => {
       const nextIndex = (currentIndexRef.current + 1) % sections.length;
       animateToSection(nextIndex, "down");
@@ -61,16 +73,15 @@ export default function HeroSection() {
 
   const stopAutoScroll = useCallback(() => {
     setIsAutoScrollActive(false);
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (countdownRef.current) clearInterval(countdownRef.current);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    if (countdownRef.current) {
+      clearInterval(countdownRef.current);
+      countdownRef.current = null;
+    }
     setTimeLeft(8);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (countdownRef.current) clearInterval(countdownRef.current);
-    };
   }, []);
 
   const animateToSection = useCallback(
@@ -107,19 +118,17 @@ export default function HeroSection() {
           sectionsRef.current.forEach((section, index) => {
             if (section) {
               if (index === newIndex) {
-                // Current active section - visible and on top
                 gsap.set(section, { zIndex: 15, y: "0%" });
               } else if (index < newIndex) {
-                // Previous sections - move above viewport
                 gsap.set(section, { zIndex: 5, y: "-100%" });
               } else {
-                // Future sections - move below viewport
                 gsap.set(section, { zIndex: 5, y: "100%" });
               }
             }
           });
           setCurrent(newIndex);
           setIsAnimating(false);
+          startAutoScroll();
         },
       });
 
@@ -137,7 +146,7 @@ export default function HeroSection() {
         "-=1.2"
       );
     },
-    [isAnimating]
+    [isAnimating, startAutoScroll]
   );
 
   const changeSection = useCallback(
@@ -147,32 +156,52 @@ export default function HeroSection() {
     [animateToSection]
   );
 
+  const scrollToNextSection = useCallback(() => {
+    if (!isAnimating) {
+      if (current === sections.length - 1) {
+        if (!isFooterVisible) {
+          setIsFooterVisible(true);
+        } else {
+          setIsFooterVisible(false);
+          changeSection(0, "down");
+        }
+      } else {
+        const nextIndex = current + 1;
+        changeSection(nextIndex, "down");
+      }
+    }
+  }, [current, isAnimating, isFooterVisible, changeSection]);
+
+  useEffect(() => {
+    startAutoScroll();
+  }, [startAutoScroll]);
+
   useEffect(() => {
     let accumulatedScroll = 0;
     const scrollThreshold = 80;
-    let scrollTimeout: NodeJS.Timeout;
-    let isScrolling = false;
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
 
-      if (isAnimating || isScrolling) return;
+      if (isAnimating || isScrollingRef.current) return;
 
-      if (scrollTimeout) {
-        clearTimeout(scrollTimeout);
+      stopAutoScroll();
+
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
       }
 
       accumulatedScroll += e.deltaY;
 
-      scrollTimeout = setTimeout(() => {
+      scrollTimeoutRef.current = setTimeout(() => {
         accumulatedScroll = 0;
-        isScrolling = false;
+        isScrollingRef.current = false;
       }, 100);
 
       const progress = Math.abs(accumulatedScroll) / scrollThreshold;
 
       if (progress >= 1) {
-        isScrolling = true;
+        isScrollingRef.current = true;
 
         if (e.deltaY > 0) {
           if (currentIndexRef.current === sections.length - 1) {
@@ -194,7 +223,7 @@ export default function HeroSection() {
         accumulatedScroll = 0;
 
         setTimeout(() => {
-          isScrolling = false;
+          isScrollingRef.current = false;
         }, 1500);
       }
     };
@@ -205,12 +234,12 @@ export default function HeroSection() {
 
       return () => {
         container.removeEventListener("wheel", handleWheel);
-        if (scrollTimeout) {
-          clearTimeout(scrollTimeout);
+        if (scrollTimeoutRef.current) {
+          clearTimeout(scrollTimeoutRef.current);
         }
       };
     }
-  }, [isAnimating, changeSection, isFooterVisible]);
+  }, [isAnimating, changeSection, isFooterVisible, stopAutoScroll]);
 
   useEffect(() => {
     let startY = 0;
@@ -230,6 +259,8 @@ export default function HeroSection() {
       const deltaTime = endTime - startTime;
 
       if (Math.abs(deltaY) > 50 && deltaTime < 500) {
+        stopAutoScroll();
+
         if (deltaY > 0) {
           if (currentIndexRef.current === sections.length - 1) {
             if (!isFooterVisible) {
@@ -262,7 +293,7 @@ export default function HeroSection() {
         container.removeEventListener("touchend", handleTouchEnd);
       };
     }
-  }, [isAnimating, changeSection, isFooterVisible]);
+  }, [isAnimating, changeSection, isFooterVisible, stopAutoScroll]);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -285,6 +316,29 @@ export default function HeroSection() {
       }
     });
   }, []);
+
+  const handleDotClick = useCallback(
+    (index: number) => {
+      if (!isAnimating && index !== current) {
+        stopAutoScroll();
+        changeSection(index, index > current ? "down" : "up");
+      }
+    },
+    [isAnimating, current, stopAutoScroll, changeSection]
+  );
+
+  const handleArrowClick = useCallback(
+    (direction: "up" | "down") => {
+      if (!isAnimating) {
+        stopAutoScroll();
+        const targetIndex = direction === "up" ? current - 1 : current + 1;
+        if (targetIndex >= 0 && targetIndex < sections.length) {
+          changeSection(targetIndex, direction);
+        }
+      }
+    },
+    [isAnimating, current, stopAutoScroll, changeSection]
+  );
 
   return (
     <>
@@ -313,14 +367,16 @@ export default function HeroSection() {
                 transform: "translateZ(0)",
               }}
             >
-              <SectionComponent
-                startAutoScroll={index === 0 ? startAutoScroll : undefined}
-                stopAutoScroll={index === 0 ? stopAutoScroll : undefined}
-                isAutoScrollActive={
-                  index === 0 ? isAutoScrollActive : undefined
-                }
-                timeLeft={index === 0 ? timeLeft : undefined}
-              />
+              {index === 0 ? (
+                <SectionComponent
+                  startAutoScroll={startAutoScroll}
+                  stopAutoScroll={stopAutoScroll}
+                  isAutoScrollActive={isAutoScrollActive}
+                  timeLeft={timeLeft}
+                />
+              ) : (
+                <SectionComponent />
+              )}
             </div>
           );
         })}
@@ -328,11 +384,7 @@ export default function HeroSection() {
         <div className="absolute top-1/2 right-2 sm:right-3 md:right-4 lg:right-6 xl:right-8 transform -translate-y-1/2 flex flex-col gap-1 sm:gap-[2px] z-40">
           {current > 0 && (
             <button
-              onClick={() => {
-                if (!isAnimating && current > 0) {
-                  changeSection(current - 1, "up");
-                }
-              }}
+              onClick={() => handleArrowClick("up")}
               className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 flex items-center justify-center group mb-2"
               aria-label="Scroll up"
             >
@@ -355,11 +407,7 @@ export default function HeroSection() {
           {sections.map((_, index) => (
             <button
               key={index}
-              onClick={() => {
-                if (!isAnimating && index !== current) {
-                  changeSection(index, index > current ? "down" : "up");
-                }
-              }}
+              onClick={() => handleDotClick(index)}
               className="relative w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 flex items-center justify-center group"
               aria-label={`Go to section ${index + 1}`}
             >
@@ -373,11 +421,7 @@ export default function HeroSection() {
 
           {current < sections.length - 1 && (
             <button
-              onClick={() => {
-                if (!isAnimating && current < sections.length - 1) {
-                  changeSection(current + 1, "down");
-                }
-              }}
+              onClick={() => handleArrowClick("down")}
               className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 flex items-center justify-center group mt-2"
               aria-label="Scroll down"
             >
@@ -396,6 +440,15 @@ export default function HeroSection() {
               </svg>
             </button>
           )}
+        </div>
+
+        <div className="fixed bottom-8 right-8 z-50">
+          <CircularScrollButton
+            onClick={() => {
+              stopAutoScroll();
+              scrollToNextSection();
+            }}
+          />
         </div>
       </section>
 

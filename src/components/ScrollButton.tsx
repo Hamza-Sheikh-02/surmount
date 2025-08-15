@@ -1,81 +1,104 @@
 "use client";
 
-import type React from "react";
-import { useEffect, useState } from "react";
-import { ChevronDownIcon } from "lucide-react";
+import { motion } from "framer-motion";
+import { useEffect, useState, useRef } from "react";
 
 interface CircularScrollButtonProps {
-  onClick: () => void;
-  autoScrollDuration?: number;
+  onClick?: () => void;
 }
 
-const CircularScrollButton: React.FC<CircularScrollButtonProps> = ({
-  onClick,
-  autoScrollDuration = 6000,
-}) => {
+function CircularScrollButton({ onClick }: CircularScrollButtonProps) {
   const [progress, setProgress] = useState(0);
+  const [isActive, setIsActive] = useState(true);
+  const onClickRef = useRef(onClick);
 
   useEffect(() => {
-    const interval = 50; // Update every 50ms
-    const increment = (interval / autoScrollDuration) * 100;
+    onClickRef.current = onClick;
+  }, [onClick]);
 
-    const timer = setInterval(() => {
+  useEffect(() => {
+    if (!isActive) return;
+
+    const interval = setInterval(() => {
       setProgress((prev) => {
-        const newProgress = prev + increment;
+        const newProgress = prev + 100 / 80;
         if (newProgress >= 100) {
-          setProgress(0); // Reset progress
-          return 0;
+          setTimeout(() => {
+            if (onClickRef.current) {
+              onClickRef.current();
+            }
+          }, 0);
+          return 0; // Reset to 0 to continue the cycle
         }
+
         return newProgress;
       });
-    }, interval);
+    }, 100);
 
-    return () => clearInterval(timer);
-  }, [autoScrollDuration]);
+    return () => clearInterval(interval);
+  }, [isActive]);
 
-  // Calculate stroke-dashoffset for circular progress
-  const circumference = 2 * Math.PI * 20; // radius = 20
+  const handleClick = () => {
+    setProgress(0);
+    onClick?.();
+  };
+
+  const circumference = 2 * Math.PI * 22; // decreased radius for smaller button
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   return (
-    <button
-      onClick={onClick}
-      className="relative w-12 h-12 flex items-center justify-center group hover:scale-110 transition-transform duration-300"
+    <motion.div
+      className="relative w-16 h-16 cursor-pointer group" // decreased size
+      onClick={handleClick}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, delay: 0.8 }}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      onViewportEnter={() => setIsActive(true)}
+      onViewportLeave={() => setIsActive(false)}
     >
-      {/* Progress circle */}
-      <svg
-        className="absolute inset-0 w-full h-full -rotate-90"
-        viewBox="0 0 44 44"
-      >
-        {/* Background circle */}
-        <circle
-          cx="22"
-          cy="22"
-          r="20"
-          fill="none"
-          stroke="rgba(255, 255, 255, 0.2)"
-          strokeWidth="2"
-        />
-        {/* Progress circle */}
-        <circle
-          cx="22"
-          cy="22"
-          r="20"
+      <div className="absolute inset-0 border-2 border-white/60 rounded-full flex items-center justify-center group-hover:border-white/90 group-hover:bg-white/15 transition-all duration-300 backdrop-blur-md shadow-lg">
+        <motion.svg
+          width="18" // decreased icon size
+          height="18"
+          viewBox="0 0 24 24"
           fill="none"
           stroke="white"
-          strokeWidth="2"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          animate={{ y: [0, 3, 0] }} // decreased animation range
+          transition={{
+            duration: 2,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
+          }}
+          className="drop-shadow-md filter"
+        >
+          <polyline points="6,9 12,15 18,9"></polyline>
+        </motion.svg>
+      </div>
+
+      <svg
+        className="absolute inset-0 w-full h-full -rotate-90"
+        viewBox="0 0 48 48"
+      >
+        <circle
+          cx="24"
+          cy="24"
+          r="22" // updated radius to match circumference calculation
+          fill="none"
+          stroke="white"
+          strokeWidth="3" // slightly decreased stroke width
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
-          className="transition-all duration-75 ease-out"
+          strokeLinecap="round"
+          className="transition-all duration-100 ease-linear opacity-90 drop-shadow-md filter"
         />
       </svg>
-
-      {/* Scroll icon */}
-      <div className="relative z-10 animate-bounce">
-        <ChevronDownIcon className="w-4 h-4 text-gray-300" />
-      </div>
-    </button>
+    </motion.div>
   );
-};
+}
 
 export default CircularScrollButton;

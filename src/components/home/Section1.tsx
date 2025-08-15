@@ -1,13 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import CircularScrollButton from "@/components/ScrollButton";
 
-interface Section1Props {
-  onScrollNext?: () => void;
-}
-
-export default function Section1({ onScrollNext }: Section1Props) {
+export default function Section1() {
   return (
     <section
       className="relative h-screen w-full flex items-center overflow-hidden"
@@ -67,8 +62,6 @@ export default function Section1({ onScrollNext }: Section1Props) {
                 </span>
                 <div className="absolute inset-0 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
               </button>
-
-              <CircularScrollButton onClick={onScrollNext || (() => {})} />
             </motion.div>
           </motion.div>
         </div>

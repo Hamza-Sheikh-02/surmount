@@ -23,7 +23,7 @@ const Home: React.FC = () => {
   }, [isLoading]);
 
   return (
-    <div>
+    <div className="bg-black overflow-hidden items-center justify-center">
       {isLoading && <Loader text="SURMOUNT" />}
       {!isLoading && <HeroSection />}
     </div>
